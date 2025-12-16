@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const cookieParser = require("cookie-parser");
+const connectDB = require("./db/db");
 const ensureDbConnection = require("./middleware/dbConnection");
 
 const app = express();
@@ -345,7 +346,20 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`✓ Server running on port ${PORT}`);
   console.log(`✓ Environment: ${process.env.NODE_ENV}`);
+
+  // Attempt to connect to MongoDB on startup
+  try {
+    await connectDB();
+  } catch (error) {
+    console.error(
+      "⚠️  Failed to connect to MongoDB on startup:",
+      error.message
+    );
+    console.error(
+      "ℹ️  Server is running but database operations will fail until MongoDB is available"
+    );
+  }
 });

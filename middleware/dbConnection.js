@@ -1,35 +1,24 @@
-const connectDB = require("../db/db");
+const mongoose = require("mongoose");
 
 // Middleware to ensure database connection before handling requests
 const ensureDbConnection = async (req, res, next) => {
-  try {
-    // Try to connect with up to 3 retries
-    let retries = 0;
-    const maxRetries = 3;
+  // Check if already connected (fast path - no delay)
+  if (mongoose.connection.readyState === 1) {
+    return next();
+  }
 
-    while (retries < maxRetries) {
-      try {
-        await connectDB();
-        return next();
-      } catch (error) {
-        retries++;
-        if (retries < maxRetries) {
-          console.log(
-            `⏳ Reconnection attempt ${retries}/${maxRetries - 1}...`
-          );
-          await new Promise((resolve) => setTimeout(resolve, 1000 * retries)); // Exponential backoff
-        } else {
-          throw error;
-        }
-      }
-    }
-  } catch (error) {
-    console.error("Database connection failed:", error.message);
-    res.status(503).json({
+  // If disconnected, reject immediately instead of retrying
+  // (The server should establish connection on startup)
+  if (mongoose.connection.readyState !== 1) {
+    console.error("❌ Database is not connected - rejecting request");
+    return res.status(503).json({
+      success: false,
       error: "Service Unavailable",
       message: "Database connection failed. Please try again later.",
     });
   }
+
+  next();
 };
 
 module.exports = ensureDbConnection;

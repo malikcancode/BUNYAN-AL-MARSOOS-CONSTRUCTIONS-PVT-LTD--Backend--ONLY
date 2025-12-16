@@ -74,15 +74,18 @@ exports.register = async (req, res) => {
 // @access  Public
 exports.login = async (req, res) => {
   try {
-    console.log("Login attempt received:", {
+    const startTime = Date.now();
+    console.log("🔐 LOGIN REQUEST:", {
       email: req.body.email,
       timestamp: new Date().toISOString(),
+      ip: req.ip,
     });
+
     const { email, password } = req.body;
 
     // Validation
     if (!email || !password) {
-      console.log("Login failed: Missing credentials");
+      console.log("❌ LOGIN FAILED: Missing credentials");
       return res.status(400).json({
         success: false,
         message: "Please provide email and password",
@@ -92,6 +95,7 @@ exports.login = async (req, res) => {
     // Find user and include password
     const user = await User.findOne({ email }).select("+password");
     if (!user) {
+      console.log("❌ LOGIN FAILED: User not found for email:", email);
       return res.status(401).json({
         success: false,
         message: "Invalid credentials",
@@ -100,6 +104,7 @@ exports.login = async (req, res) => {
 
     // Check if user is active
     if (!user.isActive) {
+      console.log("❌ LOGIN FAILED: Account deactivated for email:", email);
       return res.status(401).json({
         success: false,
         message: "Account is deactivated",
@@ -109,6 +114,7 @@ exports.login = async (req, res) => {
     // Verify password
     const isPasswordMatch = await user.comparePassword(password);
     if (!isPasswordMatch) {
+      console.log("❌ LOGIN FAILED: Invalid password for email:", email);
       return res.status(401).json({
         success: false,
         message: "Invalid credentials",
@@ -118,7 +124,14 @@ exports.login = async (req, res) => {
     // Generate token
     const token = generateToken(user._id);
 
-    console.log("Login successful for:", email);
+    const duration = Date.now() - startTime;
+    console.log("✅ LOGIN SUCCESSFUL:", {
+      email,
+      userId: user._id,
+      duration: `${duration}ms`,
+      timestamp: new Date().toISOString(),
+    });
+
     res.status(200).json({
       success: true,
       message: "Login successful",
@@ -134,7 +147,13 @@ exports.login = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Login error:", error);
+    console.error("❌ LOGIN ERROR:", {
+      error: error.message,
+      name: error.name,
+      email: req.body?.email,
+      timestamp: new Date().toISOString(),
+      stack: error.stack,
+    });
     res.status(500).json({
       success: false,
       message: "Error logging in",
