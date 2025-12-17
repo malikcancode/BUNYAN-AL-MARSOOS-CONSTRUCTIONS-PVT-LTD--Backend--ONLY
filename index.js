@@ -344,20 +344,22 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, async () => {
+app.listen(PORT, () => {
   console.log(`✓ Server running on port ${PORT}`);
   console.log(`✓ Environment: ${process.env.NODE_ENV}`);
 
-  // Attempt to connect to MongoDB on startup
-  try {
-    await connectDB();
-  } catch (error) {
-    console.error(
-      "⚠️  Failed to connect to MongoDB on startup:",
-      error.message
-    );
-    console.error(
-      "ℹ️  Server is running but database operations will fail until MongoDB is available"
-    );
-  }
+  // Attempt to connect to MongoDB on startup (non-blocking)
+  connectDB()
+    .then(() => {
+      console.log("✓ MongoDB connected successfully");
+    })
+    .catch((error) => {
+      console.error(
+        "⚠️  Failed to connect to MongoDB on startup:",
+        error.message
+      );
+      console.error(
+        "ℹ️  Server is running but database operations will fail until MongoDB is available"
+      );
+    });
 });
