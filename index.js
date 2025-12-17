@@ -199,9 +199,6 @@ console.log(
   ].filter(Boolean)
 );
 
-// Apply database connection middleware to all routes
-app.use(ensureDbConnection);
-
 // Routes
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
@@ -223,25 +220,26 @@ const plotRoutes = require("./routes/plotRoutes");
 const requestApprovalRoutes = require("./routes/requestApprovalRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 
-app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/projects", projectRoutes);
-app.use("/api/customers", customerRoutes);
-app.use("/api/chartofaccounts", chartOfAccountRoutes);
-app.use("/api/bankpayments", bankPaymentRoutes);
-app.use("/api/cashpayments", cashPaymentRoutes);
-app.use("/api/plots", plotRoutes);
-app.use("/api/items", itemRoutes);
-app.use("/api/purchases", purchaseRoutes);
-app.use("/api/suppliers", supplierRoutes);
-app.use("/api/sales-invoices", salesInvoiceRoutes);
-app.use("/api/dashboard", dashboardRoutes);
-app.use("/api/account-types", accountTypeRoutes);
-app.use("/api/reports", reportRoutes);
-app.use("/api/journal-entries", journalEntryRoutes);
-app.use("/api/general-ledger", generalLedgerRoutes);
-app.use("/api/request-approvals", requestApprovalRoutes);
-app.use("/api/notifications", notificationRoutes);
+// Apply database connection middleware ONLY to routes that need it
+app.use("/api/auth", ensureDbConnection, authRoutes);
+app.use("/api/users", ensureDbConnection, userRoutes);
+app.use("/api/projects", ensureDbConnection, projectRoutes);
+app.use("/api/customers", ensureDbConnection, customerRoutes);
+app.use("/api/chartofaccounts", ensureDbConnection, chartOfAccountRoutes);
+app.use("/api/bankpayments", ensureDbConnection, bankPaymentRoutes);
+app.use("/api/cashpayments", ensureDbConnection, cashPaymentRoutes);
+app.use("/api/plots", ensureDbConnection, plotRoutes);
+app.use("/api/items", ensureDbConnection, itemRoutes);
+app.use("/api/purchases", ensureDbConnection, purchaseRoutes);
+app.use("/api/suppliers", ensureDbConnection, supplierRoutes);
+app.use("/api/sales-invoices", ensureDbConnection, salesInvoiceRoutes);
+app.use("/api/dashboard", ensureDbConnection, dashboardRoutes);
+app.use("/api/account-types", ensureDbConnection, accountTypeRoutes);
+app.use("/api/reports", ensureDbConnection, reportRoutes);
+app.use("/api/journal-entries", ensureDbConnection, journalEntryRoutes);
+app.use("/api/general-ledger", ensureDbConnection, generalLedgerRoutes);
+app.use("/api/request-approvals", ensureDbConnection, requestApprovalRoutes);
+app.use("/api/notifications", ensureDbConnection, notificationRoutes);
 
 // Root route
 app.get("/", (req, res) => {
